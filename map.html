@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="referrer" content="no-referrer-when-downgrade">
+  <title>Starbucks Worldwide — Interactive Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <style>
+    :root{
+      --green-deep:#0B3D1F;--green-mid:#1A6335;--green-light:#2D8653;
+      --green-pale:#C8E6C9;--gold:#D4AC5A;--gold-light:#F5E6C0;
+      --cream:#FAF7F0;--cream-dark:#F0EAD6;
+      --text-dark:#1C1C1C;--text-mid:#4A4A4A;--text-light:#888;
+      --white:#FFFFFF;--panel-width:360px;
+      --shadow-md:0 4px 20px rgba(0,0,0,0.15);
+      --shadow-lg:0 8px 40px rgba(0,0,0,0.20);
+      --radius:12px;--transition:0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--green-deep);color:var(--text-dark);overflow:hidden;}
+    #app{display:flex;height:100vh;width:100vw;}
+
+    /* ── Side Panel ── */
+    #side-panel{flex:0 0 var(--panel-width);width:var(--panel-width);height:100%;background:var(--cream);display:flex;flex-direction:column;overflow:hidden;z-index:10;box-shadow:4px 0 24px rgba(0,0,0,0.18);}
+
+    .panel-header{background:var(--green-deep);padding:24px 20px 18px;flex-shrink:0;position:relative;overflow:hidden;}
+    .panel-header::before{content:"";position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(212,172,90,0.18) 0%,transparent 70%);border-radius:50%;}
+    .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+    .siren-icon{width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .panel-header h1{font-family:"Playfair Display",serif;font-size:1.35rem;font-weight:700;color:var(--white);line-height:1.2;}
+    .subtitle{font-size:0.72rem;color:rgba(255,255,255,0.5);font-weight:400;letter-spacing:0.08em;text-transform:uppercase;margin-left:48px;}
+    .store-count{position:absolute;top:20px;right:16px;background:var(--gold);color:var(--green-deep);font-size:0.7rem;font-weight:600;padding:4px 10px;border-radius:20px;}
+
+    /* Search */
+    .search-wrap{padding:12px 14px 8px;flex-shrink:0;background:var(--cream);border-bottom:1px solid var(--cream-dark);}
+    .search-box{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--cream-dark);border-radius:10px;padding:8px 12px;transition:border-color var(--transition);}
+    .search-box:focus-within{border-color:var(--green-light);box-shadow:0 0 0 3px rgba(45,134,83,0.10);}
+    .search-box svg{flex-shrink:0;color:var(--text-light);}
+    .search-box input{flex:1;border:none;outline:none;font-family:"DM Sans",sans-serif;font-size:0.875rem;color:var(--text-dark);background:transparent;}
+    .search-box input::placeholder{color:var(--text-light);}
+    #clear-search{cursor:pointer;color:var(--text-light);font-size:14px;display:none;background:none;border:none;line-height:1;padding:0;}
+    #clear-search.visible{display:block;}
+
+    /* Filters */
+    .filter-section{padding:10px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--cream-dark);}
+    .filter-label{font-size:0.65rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;}
+    #country-select{width:100%;padding:8px 10px;border:1.5px solid var(--cream-dark);border-radius:8px;font-family:"DM Sans",sans-serif;font-size:0.8rem;color:var(--text-mid);background:var(--white);cursor:pointer;}
+    #country-select:focus{outline:none;border-color:var(--green-light);}
+
+    /* Store List */
+    .store-list-wrap{flex:1;overflow-y:auto;padding:0;}
+    .store-list-wrap::-webkit-scrollbar{width:4px;}
+    .store-list-wrap::-webkit-scrollbar-track{background:transparent;}
+    .store-list-wrap::-webkit-scrollbar-thumb{background:var(--cream-dark);border-radius:4px;}
+    .list-section-title{padding:12px 16px 5px;font-size:0.65rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.1em;position:sticky;top:0;background:var(--cream);z-index:1;border-bottom:1px solid var(--cream-dark);}
+    .store-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;transition:background var(--transition);border-bottom:1px solid rgba(0,0,0,0.04);}
+    .store-item:hover{background:var(--gold-light);}
+    .store-item.active{background:var(--green-deep);color:var(--white);}
+    .store-item.active .store-name{color:var(--white);}
+    .store-item.active .store-addr{color:rgba(255,255,255,0.6);}
+    .store-item.active .store-badge{background:var(--gold);color:var(--green-deep);}
+    .store-icon{width:32px;height:32px;border-radius:50%;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .store-item.active .store-icon{background:rgba(255,255,255,0.15);}
+    .store-info{flex:1;min-width:0;}
+    .store-name{font-size:0.80rem;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
+    .store-addr{font-size:0.70rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+    .store-badge{font-size:0.60rem;font-weight:600;padding:2px 6px;border-radius:20px;background:var(--green-pale);color:var(--green-deep);flex-shrink:0;text-transform:uppercase;}
+    .no-results{padding:36px 20px;text-align:center;color:var(--text-light);font-size:0.85rem;}
+    .no-results .emoji{font-size:2rem;margin-bottom:8px;}
+    .narrow-hint{padding:36px 20px;text-align:center;color:var(--text-light);font-size:0.82rem;line-height:1.6;}
+    .narrow-hint strong{color:var(--green-mid);}
+
+    /* About */
+    .about-wrap{padding:14px 16px;background:var(--green-deep);color:rgba(255,255,255,0.75);flex-shrink:0;}
+    .about-wrap .about-title{font-family:"Playfair Display",serif;font-size:0.8rem;color:var(--gold);margin-bottom:5px;font-weight:600;}
+    .about-wrap p{font-size:0.70rem;line-height:1.6;color:rgba(255,255,255,0.55);}
+    .about-wrap a{color:var(--gold);text-decoration:none;}
+    .about-wrap a:hover{text-decoration:underline;}
+
+    /* Map */
+    #map{flex:1;height:100%;z-index:1;}
+    #load-status{position:absolute;top:16px;left:calc(var(--panel-width) + 16px);z-index:400;background:rgba(11,61,31,0.92);color:#fff;padding:8px 16px;border-radius:20px;font-size:0.78rem;box-shadow:var(--shadow-md);}
+    #load-status.hidden{display:none;}
+
+    /* Detail Panel */
+    #detail-panel{position:fixed;top:0;left:var(--panel-width);width:320px;height:100%;background:var(--white);box-shadow:var(--shadow-lg);z-index:500;transform:translateX(-110%);opacity:0;transition:transform var(--transition),opacity var(--transition);display:flex;flex-direction:column;overflow:hidden;pointer-events:none;}
+    #detail-panel.open{transform:translateX(0);opacity:1;pointer-events:auto;}
+    .detail-header{background:var(--green-deep);padding:20px 18px 16px;flex-shrink:0;position:relative;}
+    .detail-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.12);border:none;color:var(--white);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background var(--transition);}
+    .detail-close:hover{background:rgba(255,255,255,0.22);}
+    .detail-badge{display:inline-block;font-size:0.62rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;padding:3px 8px;border-radius:20px;background:var(--gold);color:var(--green-deep);margin-bottom:8px;}
+    .detail-header h2{font-family:"Playfair Display",serif;font-size:1.05rem;font-weight:700;color:var(--white);line-height:1.3;padding-right:24px;}
+    .detail-body{flex:1;padding:20px 18px;overflow-y:auto;}
+    .detail-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:16px;}
+    .detail-row-icon{width:32px;height:32px;background:var(--green-pale);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+    .detail-row-label{font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-light);margin-bottom:3px;}
+    .detail-row-value{font-size:0.83rem;font-weight:500;color:var(--text-dark);line-height:1.45;white-space:pre-line;word-break:break-word;}
+    .detail-row-value a{color:var(--green-mid);}
+    .directions-btn{display:flex;align-items:center;gap:8px;margin-top:4px;padding:10px 16px;background:var(--green-deep);color:var(--white);border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-size:0.80rem;font-weight:600;cursor:pointer;width:100%;justify-content:center;transition:background var(--transition);}
+    .directions-btn:hover{background:var(--green-mid);}
+
+    /* Menu panel */
+    .menu-section{margin-top:6px;border-top:1px solid var(--cream-dark);padding-top:16px;}
+    .menu-title{font-family:"Playfair Display",serif;font-size:0.92rem;font-weight:700;color:var(--green-deep);margin-bottom:4px;}
+    .menu-currency{font-size:0.68rem;color:var(--text-light);margin-bottom:10px;}
+    .menu-table{width:100%;border-collapse:collapse;font-size:0.74rem;}
+    .menu-table th{text-align:right;font-weight:600;color:var(--text-light);padding:4px 0;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.04em;}
+    .menu-table th:first-child{text-align:left;}
+    .menu-table td{padding:5px 0;border-top:1px solid var(--cream-dark);}
+    .menu-table td:not(:first-child){text-align:right;color:var(--text-mid);}
+    .menu-table td:first-child{color:var(--text-dark);font-weight:500;}
+    .menu-note{margin-top:12px;font-size:0.68rem;color:var(--text-light);line-height:1.5;background:var(--cream);padding:8px 10px;border-radius:8px;}
+
+    /* Popup */
+    .custom-popup .leaflet-popup-content-wrapper{background:var(--green-deep);color:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:0;overflow:hidden;}
+    .custom-popup .leaflet-popup-tip-container{display:none;}
+    .custom-popup .leaflet-popup-close-button{display:none;}
+    .custom-popup .leaflet-popup-content{margin:0;width:210px!important;}
+    .popup-inner{padding:13px 15px;}
+    .popup-name{font-family:"Playfair Display",serif;font-size:0.9rem;font-weight:700;color:var(--white);margin-bottom:5px;line-height:1.3;}
+    .popup-addr{font-size:0.72rem;color:rgba(255,255,255,0.65);line-height:1.5;}
+    .popup-hours{font-size:0.68rem;color:var(--gold);margin-top:4px;font-weight:500;}
+    .popup-footer{background:rgba(255,255,255,0.08);padding:7px 15px;font-size:0.65rem;color:rgba(255,255,255,0.5);text-align:center;cursor:pointer;}
+    .popup-footer:hover{background:rgba(255,255,255,0.14);color:var(--white);}
+
+    @media(max-width:680px){
+      :root{--panel-width:100vw;}
+      #side-panel{position:fixed;bottom:0;left:0;right:0;height:46vh;width:100vw;z-index:20;}
+      #map{height:54vh;position:fixed;top:0;left:0;right:0;}
+      #detail-panel{left:0;top:auto;bottom:0;height:70vh;width:100%;transform:translateY(110%);opacity:0;pointer-events:none;}
+      #detail-panel.open{transform:translateY(0);opacity:1;pointer-events:auto;}
+      #load-status{left:16px;}
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <aside id="side-panel">
+    <div class="panel-header">
+      <div class="logo-row">
+        <div class="siren-icon">☕</div>
+        <h1>Starbucks<br>Worldwide</h1>
+      </div>
+      <div class="subtitle">Every mapped location, globally</div>
+      <span class="store-count" id="store-count-badge">— stores</span>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search name, city, address…">
+        <button id="clear-search" title="Clear">✕</button>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-label">Country / Region</div>
+      <select id="country-select">
+        <option value="">All Countries</option>
+      </select>
+    </div>
+    <div class="store-list-wrap">
+      <div class="list-section-title" id="list-title">All Locations</div>
+      <div id="store-list"><div class="no-results"><div class="emoji">☕</div>Loading store data…</div></div>
+    </div>
+    <div class="about-wrap">
+      <div class="about-title">About this Map</div>
+      <p>Every Starbucks location mapped in OpenStreetMap, worldwide. Data refreshes automatically. Menu prices are representative per-country references, not live per-store pricing.<br>
+      <a href="index.html">← Back to project overview</a></p>
+    </div>
+  </aside>
+
+  <div id="map"></div>
+  <div id="load-status">Loading worldwide store data…</div>
+
+  <div id="detail-panel">
+    <div class="detail-header">
+      <button class="detail-close" id="detail-close">✕</button>
+      <div class="detail-badge" id="detail-badge">Starbucks</div>
+      <h2 id="detail-name">Store Name</h2>
+    </div>
+    <div class="detail-body">
+      <div class="detail-row">
+        <div class="detail-row-icon">📍</div>
+        <div><div class="detail-row-label">Address</div><div class="detail-row-value" id="detail-address">—</div></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-row-icon">📞</div>
+        <div><div class="detail-row-label">Phone</div><div class="detail-row-value" id="detail-phone">—</div></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-row-icon">🕐</div>
+        <div><div class="detail-row-label">Hours</div><div class="detail-row-value" id="detail-hours">—</div></div>
+      </div>
+      <div class="detail-row" id="detail-website-row">
+        <div class="detail-row-icon">🔗</div>
+        <div><div class="detail-row-label">Website</div><div class="detail-row-value" id="detail-website">—</div></div>
+      </div>
+      <button class="directions-btn" id="directions-btn">↗ Get Directions</button>
+
+      <div class="menu-section" id="menu-section">
+        <div class="menu-title" id="menu-title">Menu Reference</div>
+        <div class="menu-currency" id="menu-currency"></div>
+        <table class="menu-table" id="menu-table"></table>
+        <div class="menu-note" id="menu-note"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+// ── COUNTRY NAMES ──
+const COUNTRY_NAMES = {
+  US:"United States",CA:"Canada",MX:"Mexico",GT:"Guatemala",CR:"Costa Rica",PA:"Panama",
+  CO:"Colombia",PE:"Peru",CL:"Chile",AR:"Argentina",BR:"Brazil",UY:"Uruguay",
+  GB:"United Kingdom",IE:"Ireland",FR:"France",DE:"Germany",NL:"Netherlands",BE:"Belgium",
+  LU:"Luxembourg",CH:"Switzerland",AT:"Austria",ES:"Spain",PT:"Portugal",IT:"Italy",
+  GR:"Greece",PL:"Poland",CZ:"Czechia",SK:"Slovakia",HU:"Hungary",RO:"Romania",BG:"Bulgaria",
+  SE:"Sweden",NO:"Norway",DK:"Denmark",FI:"Finland",IS:"Iceland",CY:"Cyprus",MT:"Malta",
+  MC:"Monaco",AD:"Andorra",TR:"Turkey",RU:"Russia",GE:"Georgia",AZ:"Azerbaijan",KZ:"Kazakhstan",
+  AE:"United Arab Emirates",SA:"Saudi Arabia",KW:"Kuwait",QA:"Qatar",BH:"Bahrain",OM:"Oman",
+  JO:"Jordan",LB:"Lebanon",IL:"Israel",EG:"Egypt",MA:"Morocco",ZA:"South Africa",NG:"Nigeria",
+  IN:"India",PK:"Pakistan",LK:"Sri Lanka",BD:"Bangladesh",CN:"China",HK:"Hong Kong",MO:"Macau",
+  TW:"Taiwan",JP:"Japan",KR:"South Korea",MN:"Mongolia",TH:"Thailand",VN:"Vietnam",
+  PH:"Philippines",MY:"Malaysia",SG:"Singapore",ID:"Indonesia",KH:"Cambodia",LA:"Laos",
+  MM:"Myanmar",BN:"Brunei",AU:"Australia",NZ:"New Zealand"
+};
+function countryName(code){ return COUNTRY_NAMES[code] || code || "Unknown"; }
+
+// ── MAP ──
+const map = L.map('map',{center:[20,0],zoom:2,zoomControl:false,worldCopyJump:true});
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom:19,
+  crossOrigin: true
+}).addTo(map);
+
+const clusterGroup = L.markerClusterGroup({chunkedLoading:true, maxClusterRadius:60});
+map.addLayer(clusterGroup);
+
+// ── STATE ──
+let ALL_FEATURES = [];   // {id,name,country,street,city,state,postcode,phone,opening_hours,website,driveThru,lat,lng}
+let MENU = {};
+let searchQuery = '';
+let activeCountry = '';
+let selectedId = null;
+const markerById = new Map();
+const LIST_RENDER_LIMIT = 400; // avoid rendering huge DOM lists
+
+function createIcon(selected){
+  const c = selected ? '#D4AC5A' : '#2D8653';
+  const sz = selected ? 30 : 20;
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${sz}px;height:${sz}px;background:${c};border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${selected?13:9}px;box-shadow:0 2px ${selected?10:5}px rgba(0,0,0,${selected?0.4:0.22});cursor:pointer;">☕</div>`,
+    iconSize:[sz,sz], iconAnchor:[sz/2,sz/2]
+  });
+}
+
+// ── MENU RENDER ──
+function renderMenu(countryCode){
+  const data = MENU[countryCode] || MENU.default;
+  document.getElementById('menu-title').textContent = `Menu Reference — ${data.country || countryName(countryCode)}`;
+  const table = document.getElementById('menu-table');
+  const noteEl = document.getElementById('menu-note');
+
+  if(!data.items || !data.items.length){
+    document.getElementById('menu-currency').textContent = '';
+    table.innerHTML = '';
+    noteEl.textContent = data.note || 'Menu pricing has not been curated for this country yet.';
+    return;
+  }
+
+  const sym = data.symbol || '';
+  document.getElementById('menu-currency').textContent = `Prices in ${data.currency}`;
+  const sizes = MENU._sizes || ['Tall','Grande','Venti'];
+  let html = `<tr><th>Item</th><th>${sizes[0].split(' ')[0]}</th><th>${sizes[1].split(' ')[0]}</th><th>${sizes[2].split(' ')[0]}</th></tr>`;
+  data.items.forEach(item=>{
+    html += `<tr><td>${item.name}</td>${item.prices.map(p=>`<td>${sym}${p}</td>`).join('')}</tr>`;
+  });
+  table.innerHTML = html;
+  noteEl.textContent = MENU._note || 'Reference pricing only — not live per-store data. Confirm exact pricing in the official Starbucks app.';
+}
+
+// ── OPEN DETAIL ──
+function openDetail(feat){
+  if(selectedId !== null && selectedId !== feat.id){
+    const prev = markerById.get(selectedId);
+    if(prev) prev.marker.setIcon(createIcon(false));
+  }
+  selectedId = feat.id;
+  const cur = markerById.get(feat.id);
+  if(cur) cur.marker.setIcon(createIcon(true));
+
+  document.getElementById('detail-badge').textContent = countryName(feat.country);
+  document.getElementById('detail-name').textContent = feat.name;
+
+  const addrLine = [feat.street, [feat.city, feat.state, feat.postcode].filter(Boolean).join(', ')].filter(Boolean).join('\n');
+  const addrRow = document.getElementById('detail-address').closest('.detail-row');
+  if(addrLine){ document.getElementById('detail-address').textContent = addrLine; addrRow.style.display=''; }
+  else addrRow.style.display='none';
+
+  const phoneRow = document.getElementById('detail-phone').closest('.detail-row');
+  if(feat.phone){ document.getElementById('detail-phone').textContent = feat.phone; phoneRow.style.display=''; }
+  else phoneRow.style.display='none';
+
+  const hoursRow = document.getElementById('detail-hours').closest('.detail-row');
+  if(feat.opening_hours){ document.getElementById('detail-hours').textContent = feat.opening_hours; hoursRow.style.display=''; }
+  else hoursRow.style.display='none';
+
+  const websiteRow = document.getElementById('detail-website-row');
+  if(feat.website){
+    document.getElementById('detail-website').innerHTML = `<a href="${feat.website}" target="_blank" rel="noopener">View store page →</a>`;
+    websiteRow.style.display='';
+  } else websiteRow.style.display='none';
+
+  document.getElementById('directions-btn').onclick = ()=>{
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${feat.lat},${feat.lng}`,'_blank');
+  };
+
+  renderMenu(feat.country);
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.querySelectorAll('.store-item').forEach(el=>el.classList.remove('active'));
+  const li = document.querySelector(`.store-item[data-id="${feat.id}"]`);
+  if(li){ li.classList.add('active'); li.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+
+  map.flyTo([feat.lat,feat.lng], Math.max(map.getZoom(),15), {duration:0.8});
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').classList.remove('open');
+  if(selectedId!==null){
+    const e = markerById.get(selectedId);
+    if(e) e.marker.setIcon(createIcon(false));
+    selectedId = null;
+  }
+  document.querySelectorAll('.store-item').forEach(el=>el.classList.remove('active'));
+}
+document.getElementById('detail-close').addEventListener('click', closeDetail);
+
+// ── BUILD MARKERS (once, from fetched data) ──
+function buildMarkers(){
+  clusterGroup.clearLayers();
+  markerById.clear();
+
+  ALL_FEATURES.forEach(feat=>{
+    const marker = L.marker([feat.lat, feat.lng], {icon:createIcon(false)});
+    const addrShort = [feat.street, feat.city].filter(Boolean).join(', ');
+    marker.bindPopup(L.popup({className:'custom-popup',offset:[0,0],closeButton:false}).setContent(`
+      <div class="popup-inner">
+        <div class="popup-name">${feat.name}</div>
+        ${addrShort ? `<div class="popup-addr">${addrShort}</div>` : ''}
+        ${feat.opening_hours ? `<div class="popup-hours">⏰ ${feat.opening_hours}</div>` : ''}
+      </div>
+      <div class="popup-footer" onclick="openDetail(ALL_FEATURES.find(f=>f.id===${JSON.stringify(feat.id)}));this.closest('.leaflet-popup').style.display='none'">View store details →</div>
+    `));
+    marker.on('click', L.DomEvent.stopPropagation);
+    markerById.set(feat.id, {marker, feat});
+    clusterGroup.addLayer(marker);
+  });
+}
+
+// ── FILTER ──
+function isVisible(feat){
+  const matchCountry = !activeCountry || feat.country===activeCountry;
+  const q = searchQuery.toLowerCase();
+  const matchSearch = !q ||
+    feat.name.toLowerCase().includes(q) ||
+    (feat.city||'').toLowerCase().includes(q) ||
+    (feat.street||'').toLowerCase().includes(q) ||
+    countryName(feat.country).toLowerCase().includes(q);
+  return matchCountry && matchSearch;
+}
+
+function applyFilters(){
+  const visibleFeats = ALL_FEATURES.filter(isVisible);
+  const visibleIds = new Set(visibleFeats.map(f=>f.id));
+
+  markerById.forEach(({marker, feat})=>{
+    const shouldShow = visibleIds.has(feat.id);
+    const has = clusterGroup.hasLayer(marker);
+    if(shouldShow && !has) clusterGroup.addLayer(marker);
+    if(!shouldShow && has) clusterGroup.removeLayer(marker);
+  });
+
+  buildList(visibleFeats);
+  updateBadge(visibleFeats.length);
+}
+
+// ── STORE LIST ──
+function buildList(visibleFeats){
+  const container = document.getElementById('store-list');
+
+  if(!visibleFeats.length){
+    container.innerHTML = '<div class="no-results"><div class="emoji">☕</div>No stores match your search.</div>';
+    return;
+  }
+
+  if(!searchQuery && !activeCountry){
+    container.innerHTML = `<div class="narrow-hint">☕ <strong>${visibleFeats.length.toLocaleString()}</strong> stores worldwide.<br>Search a name/city, or pick a country above, to list individual stores.</div>`;
+    return;
+  }
+
+  if(visibleFeats.length > LIST_RENDER_LIMIT){
+    container.innerHTML = `<div class="narrow-hint"><strong>${visibleFeats.length.toLocaleString()}</strong> stores match.<br>Narrow your search further to list them individually (showing markers on the map already).</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  const sorted = [...visibleFeats].sort((a,b)=>a.name.localeCompare(b.name));
+  const frag = document.createDocumentFragment();
+  sorted.forEach(feat=>{
+    const addr = [feat.street, feat.city].filter(Boolean).join(', ');
+    const el = document.createElement('div');
+    el.className = 'store-item';
+    el.dataset.id = feat.id;
+    el.innerHTML = `<div class="store-icon">☕</div><div class="store-info"><div class="store-name">${feat.name}</div><div class="store-addr">${addr}</div></div><span class="store-badge">${feat.country||''}</span>`;
+    el.addEventListener('click',()=>openDetail(feat));
+    if(feat.id===selectedId) el.classList.add('active');
+    frag.appendChild(el);
+  });
+  container.appendChild(frag);
+}
+
+function updateBadge(count){
+  document.getElementById('store-count-badge').textContent = `${count.toLocaleString()} store${count!==1?'s':''}`;
+  document.getElementById('list-title').textContent = activeCountry ? countryName(activeCountry) : 'All Locations';
+}
+
+// ── SEARCH / FILTER WIRING ──
+const searchInput = document.getElementById('search-input');
+const clearBtn    = document.getElementById('clear-search');
+searchInput.addEventListener('input',()=>{
+  searchQuery = searchInput.value.trim();
+  clearBtn.classList.toggle('visible', searchQuery.length>0);
+  applyFilters();
+});
+clearBtn.addEventListener('click',()=>{
+  searchInput.value=''; searchQuery='';
+  clearBtn.classList.remove('visible');
+  applyFilters();
+});
+
+const countrySelect = document.getElementById('country-select');
+countrySelect.addEventListener('change',()=>{
+  activeCountry = countrySelect.value;
+  applyFilters();
+});
+
+function populateCountrySelect(){
+  const counts = {};
+  ALL_FEATURES.forEach(f=>{ counts[f.country] = (counts[f.country]||0)+1; });
+  const codes = Object.keys(counts).sort((a,b)=>countryName(a).localeCompare(countryName(b)));
+  codes.forEach(code=>{
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = `${countryName(code)} (${counts[code].toLocaleString()})`;
+    countrySelect.appendChild(opt);
+  });
+}
+
+// ── LOAD DATA ──
+async function init(){
+  try{
+    const [geoRes, menuRes] = await Promise.all([
+      fetch('assets/starbucks_world.geojson'),
+      fetch('assets/menu.json')
+    ]);
+    const geo = await geoRes.json();
+    MENU = await menuRes.json();
+
+    ALL_FEATURES = geo.features.map(f=>({
+      id: f.properties.id,
+      name: f.properties.name,
+      country: f.properties.country,
+      street: f.properties.street,
+      city: f.properties.city,
+      state: f.properties.state,
+      postcode: f.properties.postcode,
+      phone: f.properties.phone,
+      opening_hours: f.properties.opening_hours,
+      website: f.properties.website,
+      driveThru: f.properties.driveThru,
+      lng: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1],
+    }));
+
+    document.getElementById('load-status').classList.add('hidden');
+    populateCountrySelect();
+    buildMarkers();
+    applyFilters();
+  } catch(err){
+    console.error('Failed to load store data', err);
+    document.getElementById('load-status').textContent = 'Failed to load store data. If you opened this file directly (file://), run a local server instead — e.g. `python3 -m http.server` — since browsers block fetch() on file://.';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

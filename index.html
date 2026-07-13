@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Starbucks Worldwide — Interactive Location Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep:  #0B3D1F;
+      --green-mid:   #1A6335;
+      --green-light: #2D8653;
+      --green-pale:  #e8f5e9;
+      --gold:        #D4AC5A;
+      --gold-light:  #FBF3DC;
+      --cream:       #FAF7F0;
+      --text:        #1C1C1C;
+      --muted:       #6b7280;
+      --border:      #E5E0D5;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); line-height: 1.6; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(11,61,31,0.97); backdrop-filter: blur(8px);
+      padding: 0 5%; display: flex; align-items: center; justify-content: space-between; height: 60px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; color: #fff; font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; text-decoration: none; }
+    .nav-brand .dot { width: 28px; height: 28px; background: var(--gold); border-radius: 50%; display: grid; place-items: center; font-size: 14px; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { color: rgba(255,255,255,0.7); font-size: 0.82rem; text-decoration: none; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta { background: var(--gold) !important; color: var(--green-deep) !important; padding: 7px 18px !important; border-radius: 20px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; }
+    .nav-cta:hover { background: #e8be6a !important; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; background: var(--green-deep);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 100px 5% 80px; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 20% 50%, rgba(212,172,90,0.10) 0%, transparent 70%),
+                  radial-gradient(ellipse 60% 50% at 80% 50%, rgba(45,134,83,0.12) 0%, transparent 70%);
+    }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(212,172,90,0.15); border: 1px solid rgba(212,172,90,0.3); color: var(--gold); padding: 6px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 28px; animation: fadeUp 0.8s ease both; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 700; color: #fff; line-height: 1.12; letter-spacing: -0.02em; margin-bottom: 22px; animation: fadeUp 0.8s 0.1s ease both; }
+    .hero h1 em { color: var(--gold); font-style: italic; }
+    .hero p { max-width: 560px; font-size: 1.05rem; color: rgba(255,255,255,0.65); font-weight: 300; margin-bottom: 44px; animation: fadeUp 0.8s 0.2s ease both; }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.8s 0.3s ease both; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 9px; background: var(--gold); color: var(--green-deep); padding: 14px 32px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(212,172,90,0.4); }
+    .btn-primary:hover { background: #e8be6a; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,172,90,0.5); }
+    .btn-primary .arrow { transition: transform 0.2s; }
+    .btn-primary:hover .arrow { transform: translateX(4px); }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85); padding: 14px 28px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.95rem; text-decoration: none; transition: all 0.2s; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.4); }
+    .hero-stats { display: flex; gap: 48px; margin-top: 64px; animation: fadeUp 0.8s 0.4s ease both; }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px; }
+
+    /* PREVIEW BAND */
+    .preview-band { background: var(--green-mid); padding: 18px 5%; display: flex; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+    .preview-band p { color: rgba(255,255,255,0.8); font-size: 0.88rem; }
+    .preview-band a { color: var(--gold); font-weight: 600; text-decoration: none; font-size: 0.88rem; border-bottom: 1px solid rgba(212,172,90,0.4); transition: border-color 0.2s; }
+    .preview-band a:hover { border-color: var(--gold); }
+
+    /* SECTIONS */
+    section { padding: 96px 5%; }
+    .section-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--green-light); margin-bottom: 12px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 700; color: var(--green-deep); line-height: 1.2; margin-bottom: 16px; }
+    .section-body { font-size: 1rem; color: var(--muted); max-width: 600px; line-height: 1.75; }
+    .divider { width: 48px; height: 3px; background: var(--gold); border-radius: 2px; margin: 20px 0 40px; }
+
+    /* FEATURES */
+    #features { background: #fff; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 48px; }
+    .feature-card { background: var(--cream); border: 1px solid var(--border); border-radius: 16px; padding: 28px 26px; transition: transform 0.2s, box-shadow 0.2s; }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .feature-icon { width: 44px; height: 44px; background: var(--green-pale); border-radius: 12px; display: grid; place-items: center; font-size: 20px; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 0.95rem; font-weight: 600; color: var(--green-deep); margin-bottom: 8px; }
+    .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+    /* DATASET */
+    #dataset { background: var(--cream); }
+    .dataset-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .dataset-table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+    .dataset-table th { text-align: left; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 10px 14px; border-bottom: 2px solid var(--border); }
+    .dataset-table td { padding: 12px 14px; font-size: 0.88rem; border-bottom: 1px solid var(--border); color: var(--text); }
+    .dataset-table tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; font-size: 0.75rem; font-weight: 600; background: var(--gold-light); color: #7a5e1a; padding: 3px 10px; border-radius: 20px; }
+    .code { font-size: 0.78rem; background: var(--green-pale); color: var(--green-deep); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .pipeline { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .pipeline-step { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .step-num { width: 24px; height: 24px; flex-shrink: 0; background: var(--green-deep); color: #fff; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; }
+    .pipeline-step p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+    .pipeline-step p strong { color: var(--text); }
+
+    /* TECH */
+    #tech { background: var(--green-deep); }
+    #tech .section-label { color: var(--gold); }
+    #tech .section-title { color: #fff; }
+    #tech .divider { background: var(--gold); }
+    #tech .section-body { color: rgba(255,255,255,0.6); }
+    .stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 48px; }
+    .stack-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 22px 20px; transition: background 0.2s; }
+    .stack-card:hover { background: rgba(255,255,255,0.10); }
+    .stack-card .tech-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .stack-card h4 { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 5px; }
+    .stack-card p { font-size: 0.78rem; color: rgba(255,255,255,0.45); line-height: 1.5; }
+
+    /* TEAM */
+    #team { background: #fff; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 48px; }
+    .team-card { border: 1px solid var(--border); border-radius: 16px; padding: 28px 22px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; }
+    .team-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.07); }
+    .team-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--green-deep); color: #fff; display: grid; place-items: center; font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; margin: 0 auto 16px; }
+    .team-name { font-size: 0.95rem; font-weight: 600; color: var(--green-deep); margin-bottom: 6px; }
+    .team-role { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .team-tag { display: inline-block; margin-top: 12px; font-size: 0.68rem; font-weight: 600; background: var(--green-pale); color: var(--green-mid); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* REFERENCES */
+    #references { background: var(--cream); }
+    .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+    .ref-group h4 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--green-light); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .ref-group ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .ref-group li { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+    .ref-group a { color: var(--green-mid); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+    .ref-group a:hover { border-color: var(--green-mid); }
+
+    /* FOOTER */
+    footer { background: var(--green-deep); padding: 40px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    .footer-left { color: rgba(255,255,255,0.55); font-size: 0.82rem; }
+    .footer-left strong { color: rgba(255,255,255,0.9); }
+    .footer-right { display: flex; gap: 16px; }
+    .footer-right a { color: rgba(255,255,255,0.55); font-size: 0.82rem; text-decoration: none; transition: color 0.2s; }
+    .footer-right a:hover { color: var(--gold); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-stats { gap: 24px; }
+      .dataset-cols, .ref-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="dot">☕</div>
+    Starbucks Worldwide
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#dataset">Dataset</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="#team">Team</a>
+    <a href="map.html" class="nav-cta">Launch Map →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">☕ Grew from a GEOG 495 · University of Washington project</div>
+  <h1>Starbucks<br><em>Worldwide</em></h1>
+  <p>An interactive geospatial web map covering every Starbucks location mapped in OpenStreetMap across the globe — searchable, filterable by country, refreshed automatically, with a reference menu and price list for major markets.</p>
+  <div class="hero-btns">
+    <a href="map.html" class="btn-primary">
+      Explore the Map <span class="arrow">→</span>
+    </a>
+    <a href="https://github.com/Gunehee/Starbucks_World" class="btn-secondary" target="_blank">
+      ⌥ View on GitHub
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num" id="stat-stores">—</div>
+      <div class="stat-label">Store Locations</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-countries">—</div>
+      <div class="stat-label">Countries</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">Daily</div>
+      <div class="stat-label">Auto-Refresh</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">API Keys Needed</div>
+    </div>
+  </div>
+</section>
+
+<!-- BAND -->
+<div class="preview-band">
+  <p>🟢 Live Demo — <a href="map.html">Open the interactive map</a> or scroll to explore how it was built.</p>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">What it does</div>
+  <h2 class="section-title">Built for real-world exploration</h2>
+  <div class="divider"></div>
+  <p class="section-body">Every feature was designed to help users quickly find and learn about a Starbucks anywhere in the world — even with tens of thousands of locations on the map.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🌍</div>
+      <h3>Worldwide Coverage</h3>
+      <p>Every country with a mapped Starbucks presence in OpenStreetMap, from the US to South Korea to the UAE — one map, clustered for performance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Search & Country Filter</h3>
+      <p>Type a store name, city, or address, or narrow down to a single country from the dropdown — the map and list update instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">☕</div>
+      <h3>Per-Country Menu Reference</h3>
+      <p>Each store's detail panel shows a representative menu and price list for its country — a helpful reference, not live per-store pricing.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <h3>Store Detail Panel</h3>
+      <p>Selecting a store opens a slide-in panel with its full address, phone number, hours of operation, and store webpage link where available.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔄</div>
+      <h3>Automatic Daily Refresh</h3>
+      <p>A GitHub Actions workflow re-queries OpenStreetMap every day, so new and closed stores make their way onto the map without manual work.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">↗️</div>
+      <h3>Google Maps Directions</h3>
+      <p>Every store detail panel includes a one-click "Get Directions" button that opens Google Maps with the destination pre-filled.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DATASET -->
+<section id="dataset">
+  <div class="section-label">Data & Methodology</div>
+  <h2 class="section-title">From OpenStreetMap to interactive GeoJSON</h2>
+  <div class="divider"></div>
+  <div class="dataset-cols">
+    <div>
+      <p class="section-body">Store locations come from <a href="https://www.openstreetmap.org/copyright" target="_blank" style="color:var(--green-mid)">OpenStreetMap</a>, queried live through the Overpass API. The project originally used a static 2021 Kaggle CSV filtered to Seattle only — that snapshot is retired in favor of a source that can be re-queried and kept current.</p>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <div class="step-num">1</div>
+          <p><strong>Query</strong> — For each of ~80 countries, ask Overpass for every node tagged <span class="code">brand:wikidata=Q37158</span> (Starbucks) inside that country's boundary</p>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-num">2</div>
+          <p><strong>Dedupe & Normalize</strong> — Merge results by OSM node ID, extract name, address, phone, hours, and website from OSM tags</p>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-num">3</div>
+          <p><strong>Safety Check</strong> — If a run returns far fewer stores than the last one (likely a partial Overpass outage), keep the previous good data instead of overwriting it</p>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-num">4</div>
+          <p><strong>Publish</strong> — Save one worldwide GeoJSON file, fetched by the map at runtime and paired with a manually curated per-country menu reference</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <table class="dataset-table">
+        <thead>
+          <tr><th>File</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="code">starbucks_world.geojson</span></td><td>All worldwide store locations, auto-refreshed daily</td></tr>
+          <tr><td><span class="code">menu.json</span></td><td>Reference menu + representative pricing per country</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:16px;">Starbucks has no public per-store pricing API, so menu prices are manually curated country-level references — not live, store-specific prices. Store location data is fetched by <span class="code">map.html</span> at runtime, so viewing the map requires either GitHub Pages or a local static server.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section id="tech">
+  <div class="section-label">Built with</div>
+  <h2 class="section-title">Open-source, zero dependency</h2>
+  <div class="divider"></div>
+  <p class="section-body">No build tools. No framework. No API key. The map runs from static files — HTML, CSS, and vanilla JS — served by GitHub Pages.</p>
+  <div class="stack-grid">
+    <div class="stack-card">
+      <div class="tech-icon">🗺️</div>
+      <h4>Leaflet.js v1.9.4</h4>
+      <p>Interactive map rendering, marker management, and popup system</p>
+    </div>
+    <div class="stack-card">
+      <div class="tech-icon">🔗</div>
+      <h4>Leaflet.markercluster</h4>
+      <p>Clusters tens of thousands of markers so the map stays smooth at world zoom</p>
+    </div>
+    <div class="stack-card">
+      <div class="tech-icon">🌐</div>
+      <h4>OpenStreetMap + Overpass</h4>
+      <p>Free base map tiles and a live, queryable worldwide store dataset — no API key</p>
+    </div>
+    <div class="stack-card">
+      <div class="tech-icon">📦</div>
+      <h4>GeoJSON</h4>
+      <p>Store location data fetched at runtime, with name, address, phone, and hours</p>
+    </div>
+    <div class="stack-card">
+      <div class="tech-icon">⚡</div>
+      <h4>Vanilla JS ES6+</h4>
+      <p>All filtering, search, and state management — no framework dependency</p>
+    </div>
+    <div class="stack-card">
+      <div class="tech-icon">🐍</div>
+      <h4>Python + GitHub Actions</h4>
+      <p>A scheduled workflow re-queries Overpass daily and commits the refreshed data</p>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="section-label">Contributors</div>
+  <h2 class="section-title">Built by a team of four</h2>
+  <div class="divider"></div>
+  <p class="section-body">Originally developed as a collaborative group project for GEOG 495: Digital Geographies at the University of Washington, then extended from a single-city map to a worldwide dataset with automatic daily refresh and per-country menu pricing.</p>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar">G</div>
+      <div class="team-name">Gunhee</div>
+      <div class="team-role">Geocoder, sidebar panel design, project rebuild and GitHub Pages deployment; worldwide data pipeline and map rebuild</div>
+      <span class="team-tag">Lead Dev</span>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">H</div>
+      <div class="team-name">Haochen</div>
+      <div class="team-role">Layer toggle logic, GeoJSON source loading and integration</div>
+      <span class="team-tag">Frontend</span>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">SL</div>
+      <div class="team-name">Sophia L.</div>
+      <div class="team-role">Map frame architecture, interactive feature implementation and UX</div>
+      <span class="team-tag">Frontend</span>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">SS</div>
+      <div class="team-name">Sophia S.</div>
+      <div class="team-role">Data collection, CSV cleaning, GeoJSON segmentation and export</div>
+      <span class="team-tag">Data</span>
+    </div>
+  </div>
+  <p style="margin-top:36px;font-size:0.85rem;color:var(--muted);">Special thanks to <strong style="color:var(--text)">Professor Bo Zhao</strong> and <strong style="color:var(--text)">Teaching Assistant Steven Bao</strong> at the University of Washington for their guidance and feedback throughout this project.</p>
+</section>
+
+<!-- REFERENCES -->
+<section id="references">
+  <div class="section-label">References</div>
+  <h2 class="section-title">Sources & Citations</h2>
+  <div class="divider"></div>
+  <div class="ref-grid">
+    <div class="ref-group">
+      <h4>Data Sources</h4>
+      <ul>
+        <li>OpenStreetMap contributors. (n.d.). <em>Starbucks locations</em>, queried via the Overpass API.<br><a href="https://www.openstreetmap.org/copyright" target="_blank">openstreetmap.org/copyright</a> (ODbL)</li>
+        <li>Menu and pricing reference manually compiled per country — Starbucks does not publish a per-store pricing API.</li>
+        <li>Kukuroo3. (2021). <em>Starbucks Locations Worldwide 2021 Version</em>. Kaggle. — original data source for the Seattle-only version of this project.<br><a href="https://www.kaggle.com/datasets/kukuroo3/starbucks-locations-worldwide-2021-version" target="_blank">kaggle.com/datasets/kukuroo3/starbucks-locations-worldwide-2021-version</a></li>
+      </ul>
+    </div>
+    <div class="ref-group">
+      <h4>Libraries & Tools</h4>
+      <ul>
+        <li>Agafonkin, V. (2010). <em>Leaflet.js</em> (v1.9.4).<br><a href="https://leafletjs.com" target="_blank">leafletjs.com</a></li>
+        <li>Danzel. (2012). <em>Leaflet.markercluster</em>.<br><a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank">github.com/Leaflet/Leaflet.markercluster</a></li>
+        <li>OpenStreetMap contributors. (n.d.). <em>OpenStreetMap</em>.<br><a href="https://www.openstreetmap.org/copyright" target="_blank">openstreetmap.org/copyright</a></li>
+      </ul>
+    </div>
+    <div class="ref-group">
+      <h4>Context & Background</h4>
+      <ul>
+        <li>Starbucks. (n.d.). <em>Our Heritage</em>.<br><a href="https://www.starbucks.com/about-us/our-heritage/" target="_blank">starbucks.com/about-us/our-heritage</a></li>
+        <li>Seattle Metropolitan. (2015). <em>Every Single Starbucks in Seattle, Ranked</em>.<br><a href="https://www.seattlemet.com/eat-and-drink/2015/08/every-single-starbucks-in-seattle-ranked" target="_blank">seattlemet.com</a></li>
+        <li>The Commons Cafe. (n.d.). <em>Starbucks Dominates the Coffee Market in Seattle</em>.<br><a href="https://www.thecommonscafe.com/starbucks-dominates-the-coffee-market-in-seattle/" target="_blank">thecommonscafe.com</a></li>
+      </ul>
+    </div>
+    <div class="ref-group">
+      <h4>Additional Reading</h4>
+      <ul>
+        <li>Starbucks Melody. (2018). <em>Your Seattle Starbucks Checklist</em>.<br><a href="http://www.starbucksmelody.com/2018/11/24/starbucks-checklist/" target="_blank">starbucksmelody.com</a></li>
+        <li>Choose Washington State. (n.d.). <em>Starbucks: A Legendary Washington State Business Since 1971</em>.<br><a href="http://choosewashingtonstate.com/success-stories/starbucks/" target="_blank">choosewashingtonstate.com</a></li>
+        <li>Condé Nast Traveler. (n.d.). <em>Starbucks Reserve Roastery, Seattle</em>.<br><a href="https://www.cntraveler.com/bars/seattle/starbucks-reserve-roastery" target="_blank">cntraveler.com</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <strong>Starbucks Worldwide</strong> · Grew from a GEOG 495 — Digital Geographies project<br>
+    University of Washington · Data via OpenStreetMap
+  </div>
+  <div class="footer-right">
+    <a href="map.html">Launch Map</a>
+    <a href="https://github.com/Gunehee/Starbucks_World" target="_blank">GitHub</a>
+    <a href="#">Back to Top ↑</a>
+  </div>
+</footer>
+
+</body>
+</html>

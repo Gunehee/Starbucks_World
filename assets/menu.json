@@ -1,0 +1,270 @@
+{
+  "_note": "Representative/reference menu and pricing only — NOT live per-store data. Starbucks does not publish a public per-store pricing API, so these are commonly-cited standard menu prices for each market, manually compiled and periodically approximate. Always confirm exact current pricing in the official Starbucks app or at the store.",
+  "_sizes": ["Tall (355ml)", "Grande (473ml)", "Venti (591ml)"],
+  "default": {
+    "country": "Other / Unlisted",
+    "currency": "USD",
+    "note": "Menu pricing has not been curated for this country yet. Please check the local Starbucks app or website for the exact menu and prices.",
+    "items": []
+  },
+  "US": {
+    "country": "United States",
+    "currency": "USD",
+    "symbol": "$",
+    "items": [
+      { "name": "Caffè Americano", "prices": [3.65, 4.25, 4.65] },
+      { "name": "Caffè Latte", "prices": [4.45, 5.15, 5.65] },
+      { "name": "Cappuccino", "prices": [4.45, 5.15, 5.65] },
+      { "name": "Caramel Macchiato", "prices": [4.95, 5.65, 6.15] },
+      { "name": "Mocha", "prices": [4.75, 5.45, 5.95] },
+      { "name": "Cold Brew", "prices": [4.05, 4.55, 4.95] }
+    ]
+  },
+  "CA": {
+    "country": "Canada",
+    "currency": "CAD",
+    "symbol": "$",
+    "items": [
+      { "name": "Caffè Americano", "prices": [3.95, 4.45, 4.85] },
+      { "name": "Caffè Latte", "prices": [4.75, 5.35, 5.85] },
+      { "name": "Cappuccino", "prices": [4.75, 5.35, 5.85] },
+      { "name": "Caramel Macchiato", "prices": [5.25, 5.85, 6.35] },
+      { "name": "Mocha", "prices": [5.05, 5.65, 6.15] },
+      { "name": "Cold Brew", "prices": [4.35, 4.85, 5.25] }
+    ]
+  },
+  "GB": {
+    "country": "United Kingdom",
+    "currency": "GBP",
+    "symbol": "£",
+    "items": [
+      { "name": "Caffè Americano", "prices": [2.95, 3.35, 3.65] },
+      { "name": "Caffè Latte", "prices": [3.45, 3.95, 4.35] },
+      { "name": "Cappuccino", "prices": [3.45, 3.95, 4.35] },
+      { "name": "Caramel Macchiato", "prices": [3.95, 4.45, 4.85] },
+      { "name": "Mocha", "prices": [3.75, 4.25, 4.65] },
+      { "name": "Cold Brew", "prices": [3.55, 3.95, 4.35] }
+    ]
+  },
+  "KR": {
+    "country": "South Korea",
+    "currency": "KRW",
+    "symbol": "₩",
+    "items": [
+      { "name": "Caffè Americano", "prices": [4500, 4900, 5300] },
+      { "name": "Caffè Latte", "prices": [5000, 5400, 5800] },
+      { "name": "Cappuccino", "prices": [5000, 5400, 5800] },
+      { "name": "Caramel Macchiato", "prices": [5900, 6300, 6700] },
+      { "name": "Mocha", "prices": [5700, 6100, 6500] },
+      { "name": "Cold Brew", "prices": [5000, 5400, 5800] }
+    ]
+  },
+  "JP": {
+    "country": "Japan",
+    "currency": "JPY",
+    "symbol": "¥",
+    "items": [
+      { "name": "Caffè Americano", "prices": [455, 490, 535] },
+      { "name": "Caffè Latte", "prices": [495, 540, 590] },
+      { "name": "Cappuccino", "prices": [495, 540, 590] },
+      { "name": "Caramel Macchiato", "prices": [590, 635, 685] },
+      { "name": "Mocha", "prices": [560, 605, 655] },
+      { "name": "Cold Brew", "prices": [495, 540, 590] }
+    ]
+  },
+  "CN": {
+    "country": "China",
+    "currency": "CNY",
+    "symbol": "¥",
+    "items": [
+      { "name": "Caffè Americano", "prices": [27, 30, 33] },
+      { "name": "Caffè Latte", "prices": [31, 34, 37] },
+      { "name": "Cappuccino", "prices": [31, 34, 37] },
+      { "name": "Caramel Macchiato", "prices": [36, 39, 42] },
+      { "name": "Mocha", "prices": [34, 37, 40] },
+      { "name": "Cold Brew", "prices": [31, 34, 37] }
+    ]
+  },
+  "TW": {
+    "country": "Taiwan",
+    "currency": "TWD",
+    "symbol": "NT$",
+    "items": [
+      { "name": "Caffè Americano", "prices": [110, 125, 140] },
+      { "name": "Caffè Latte", "prices": [135, 150, 165] },
+      { "name": "Cappuccino", "prices": [135, 150, 165] },
+      { "name": "Caramel Macchiato", "prices": [155, 170, 185] },
+      { "name": "Mocha", "prices": [145, 160, 175] },
+      { "name": "Cold Brew", "prices": [135, 150, 165] }
+    ]
+  },
+  "SG": {
+    "country": "Singapore",
+    "currency": "SGD",
+    "symbol": "$",
+    "items": [
+      { "name": "Caffè Americano", "prices": [5.9, 6.5, 7.1] },
+      { "name": "Caffè Latte", "prices": [6.9, 7.5, 8.1] },
+      { "name": "Cappuccino", "prices": [6.9, 7.5, 8.1] },
+      { "name": "Caramel Macchiato", "prices": [7.5, 8.1, 8.7] },
+      { "name": "Mocha", "prices": [7.2, 7.8, 8.4] },
+      { "name": "Cold Brew", "prices": [6.9, 7.5, 8.1] }
+    ]
+  },
+  "AU": {
+    "country": "Australia",
+    "currency": "AUD",
+    "symbol": "$",
+    "items": [
+      { "name": "Caffè Americano", "prices": [4.5, 5.0, 5.5] },
+      { "name": "Caffè Latte", "prices": [5.2, 5.7, 6.2] },
+      { "name": "Cappuccino", "prices": [5.2, 5.7, 6.2] },
+      { "name": "Caramel Macchiato", "prices": [5.8, 6.3, 6.8] },
+      { "name": "Mocha", "prices": [5.5, 6.0, 6.5] },
+      { "name": "Cold Brew", "prices": [5.2, 5.7, 6.2] }
+    ]
+  },
+  "MX": {
+    "country": "Mexico",
+    "currency": "MXN",
+    "symbol": "$",
+    "items": [
+      { "name": "Caffè Americano", "prices": [49, 55, 61] },
+      { "name": "Caffè Latte", "prices": [59, 65, 72] },
+      { "name": "Cappuccino", "prices": [59, 65, 72] },
+      { "name": "Caramel Macchiato", "prices": [69, 76, 83] },
+      { "name": "Mocha", "prices": [65, 72, 79] },
+      { "name": "Cold Brew", "prices": [59, 65, 72] }
+    ]
+  },
+  "TR": {
+    "country": "Turkey",
+    "currency": "TRY",
+    "symbol": "₺",
+    "items": [
+      { "name": "Caffè Americano", "prices": [110, 125, 140] },
+      { "name": "Caffè Latte", "prices": [135, 150, 165] },
+      { "name": "Cappuccino", "prices": [135, 150, 165] },
+      { "name": "Caramel Macchiato", "prices": [155, 170, 185] },
+      { "name": "Mocha", "prices": [145, 160, 175] },
+      { "name": "Cold Brew", "prices": [135, 150, 165] }
+    ]
+  },
+  "AE": {
+    "country": "United Arab Emirates",
+    "currency": "AED",
+    "symbol": "د.إ",
+    "items": [
+      { "name": "Caffè Americano", "prices": [15, 17, 19] },
+      { "name": "Caffè Latte", "prices": [18, 20, 22] },
+      { "name": "Cappuccino", "prices": [18, 20, 22] },
+      { "name": "Caramel Macchiato", "prices": [21, 23, 25] },
+      { "name": "Mocha", "prices": [19, 21, 23] },
+      { "name": "Cold Brew", "prices": [18, 20, 22] }
+    ]
+  },
+  "TH": {
+    "country": "Thailand",
+    "currency": "THB",
+    "symbol": "฿",
+    "items": [
+      { "name": "Caffè Americano", "prices": [95, 105, 115] },
+      { "name": "Caffè Latte", "prices": [115, 125, 135] },
+      { "name": "Cappuccino", "prices": [115, 125, 135] },
+      { "name": "Caramel Macchiato", "prices": [130, 140, 150] },
+      { "name": "Mocha", "prices": [120, 130, 140] },
+      { "name": "Cold Brew", "prices": [115, 125, 135] }
+    ]
+  },
+  "PH": {
+    "country": "Philippines",
+    "currency": "PHP",
+    "symbol": "₱",
+    "items": [
+      { "name": "Caffè Americano", "prices": [130, 145, 160] },
+      { "name": "Caffè Latte", "prices": [155, 170, 185] },
+      { "name": "Cappuccino", "prices": [155, 170, 185] },
+      { "name": "Caramel Macchiato", "prices": [175, 190, 205] },
+      { "name": "Mocha", "prices": [165, 180, 195] },
+      { "name": "Cold Brew", "prices": [155, 170, 185] }
+    ]
+  },
+  "MY": {
+    "country": "Malaysia",
+    "currency": "MYR",
+    "symbol": "RM",
+    "items": [
+      { "name": "Caffè Americano", "prices": [14.5, 16.0, 17.5] },
+      { "name": "Caffè Latte", "prices": [17.0, 18.5, 20.0] },
+      { "name": "Cappuccino", "prices": [17.0, 18.5, 20.0] },
+      { "name": "Caramel Macchiato", "prices": [19.5, 21.0, 22.5] },
+      { "name": "Mocha", "prices": [18.0, 19.5, 21.0] },
+      { "name": "Cold Brew", "prices": [17.0, 18.5, 20.0] }
+    ]
+  },
+  "ID": {
+    "country": "Indonesia",
+    "currency": "IDR",
+    "symbol": "Rp",
+    "items": [
+      { "name": "Caffè Americano", "prices": [35000, 40000, 45000] },
+      { "name": "Caffè Latte", "prices": [42000, 47000, 52000] },
+      { "name": "Cappuccino", "prices": [42000, 47000, 52000] },
+      { "name": "Caramel Macchiato", "prices": [48000, 53000, 58000] },
+      { "name": "Mocha", "prices": [45000, 50000, 55000] },
+      { "name": "Cold Brew", "prices": [42000, 47000, 52000] }
+    ]
+  },
+  "DE": {
+    "country": "Germany",
+    "currency": "EUR",
+    "symbol": "€",
+    "items": [
+      { "name": "Caffè Americano", "prices": [3.9, 4.3, 4.7] },
+      { "name": "Caffè Latte", "prices": [4.5, 4.9, 5.3] },
+      { "name": "Cappuccino", "prices": [4.5, 4.9, 5.3] },
+      { "name": "Caramel Macchiato", "prices": [4.9, 5.3, 5.7] },
+      { "name": "Mocha", "prices": [4.7, 5.1, 5.5] },
+      { "name": "Cold Brew", "prices": [4.5, 4.9, 5.3] }
+    ]
+  },
+  "FR": {
+    "country": "France",
+    "currency": "EUR",
+    "symbol": "€",
+    "items": [
+      { "name": "Caffè Americano", "prices": [4.1, 4.5, 4.9] },
+      { "name": "Caffè Latte", "prices": [4.7, 5.1, 5.5] },
+      { "name": "Cappuccino", "prices": [4.7, 5.1, 5.5] },
+      { "name": "Caramel Macchiato", "prices": [5.1, 5.5, 5.9] },
+      { "name": "Mocha", "prices": [4.9, 5.3, 5.7] },
+      { "name": "Cold Brew", "prices": [4.7, 5.1, 5.5] }
+    ]
+  },
+  "SA": {
+    "country": "Saudi Arabia",
+    "currency": "SAR",
+    "symbol": "﷼",
+    "items": [
+      { "name": "Caffè Americano", "prices": [15, 17, 19] },
+      { "name": "Caffè Latte", "prices": [18, 20, 22] },
+      { "name": "Cappuccino", "prices": [18, 20, 22] },
+      { "name": "Caramel Macchiato", "prices": [21, 23, 25] },
+      { "name": "Mocha", "prices": [19, 21, 23] },
+      { "name": "Cold Brew", "prices": [18, 20, 22] }
+    ]
+  },
+  "KW": {
+    "country": "Kuwait",
+    "currency": "KWD",
+    "symbol": "د.ك",
+    "items": [
+      { "name": "Caffè Americano", "prices": [1.2, 1.35, 1.5] },
+      { "name": "Caffè Latte", "prices": [1.45, 1.6, 1.75] },
+      { "name": "Cappuccino", "prices": [1.45, 1.6, 1.75] },
+      { "name": "Caramel Macchiato", "prices": [1.65, 1.8, 1.95] },
+      { "name": "Mocha", "prices": [1.55, 1.7, 1.85] },
+      { "name": "Cold Brew", "prices": [1.45, 1.6, 1.75] }
+    ]
+  }
+}
