@@ -21,7 +21,7 @@ Search by name, filter by country, view a per-country menu reference, and get di
 
 ## Overview
 
-This project started as a class assignment mapping the ~100 Starbucks locations in Seattle, WA. It has since been rebuilt to cover every country with a mapped Starbucks presence — searchable, filterable by country, and kept current by a daily automated data refresh.
+This project started as a map of the ~100 Starbucks locations in Seattle, WA. It has since been rebuilt to cover every country with a mapped Starbucks presence — searchable, filterable by country, and kept current by a daily automated data refresh.
 
 > **[→ Open the interactive map](https://gunehee.github.io/Starbucks_World/map.html)** to explore stores worldwide.
 
@@ -125,19 +125,6 @@ python3 scripts/update_data.py
 ```
 
 This takes roughly 20–40 minutes since it queries ~80 countries sequentially against the public Overpass API.
-
----
-
-## Team
-
-Originally developed as a group assignment for **GEOG 495: Digital Geographies** at the **University of Washington**, then extended to worldwide coverage with automatic refresh and menu pricing.
-
-| Contributor | Responsibilities |
-|---|---|
-| **Gunhee** | Geocoder, sidebar panel, project rebuild and deployment; worldwide data pipeline and map rebuild |
-| **Haochen** | Layer toggle logic, GeoJSON data loading |
-| **Sophia L.** | Map frame, interactive feature implementation |
-| **Sophia S.** | Data collection, cleaning, and GeoJSON export |
 
 ---
 

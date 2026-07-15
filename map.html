@@ -83,9 +83,28 @@
     .about-wrap a:hover{text-decoration:underline;}
 
     /* Map */
-    #map{flex:1;height:100%;z-index:1;}
-    #load-status{position:absolute;top:16px;left:calc(var(--panel-width) + 16px);z-index:400;background:rgba(11,61,31,0.92);color:#fff;padding:8px 16px;border-radius:20px;font-size:0.78rem;box-shadow:var(--shadow-md);}
+    #map{flex:1;height:100%;z-index:1;opacity:0;transition:opacity 0.7s ease;}
+    #map.ready{opacity:1;}
+    #load-status{position:absolute;top:16px;left:calc(var(--panel-width) + 16px);z-index:400;background:rgba(11,61,31,0.92);color:#fff;padding:8px 16px;border-radius:20px;font-size:0.78rem;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:8px;}
+    #load-status::before{content:"";width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
     #load-status.hidden{display:none;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* Custom clusters */
+    .custom-cluster{background:transparent;border:none;}
+    .cluster-bubble{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 32% 28%,#2D8653,#0B3D1F 85%);color:#fff;font-family:"DM Sans",sans-serif;font-weight:600;border:2.5px solid rgba(255,255,255,0.92);box-shadow:0 3px 14px rgba(11,61,31,0.45),0 0 0 6px rgba(45,134,83,0.16);transition:transform 0.2s cubic-bezier(0.4,0,0.2,1),box-shadow 0.2s;}
+    .cluster-bubble:hover{transform:scale(1.12);box-shadow:0 5px 20px rgba(11,61,31,0.55),0 0 0 9px rgba(45,134,83,0.24);}
+    .cluster-bubble.sm{font-size:0.72rem;}
+    .cluster-bubble.md{font-size:0.78rem;}
+    .cluster-bubble.lg{font-size:0.84rem;box-shadow:0 4px 16px rgba(11,61,31,0.5),0 0 0 8px rgba(212,172,90,0.22);}
+    .cluster-bubble.xl{font-size:0.9rem;border-color:var(--gold);box-shadow:0 5px 20px rgba(11,61,31,0.55),0 0 0 10px rgba(212,172,90,0.28);}
+
+    /* Store markers */
+    .store-marker{position:relative;width:100%;height:100%;background:linear-gradient(135deg,#2D8653,#1A6335);border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 2px 6px rgba(0,0,0,0.28);cursor:pointer;transition:transform 0.18s cubic-bezier(0.4,0,0.2,1),box-shadow 0.18s;}
+    .store-marker:hover{transform:scale(1.35);box-shadow:0 4px 12px rgba(0,0,0,0.38);}
+    .store-marker.selected{background:linear-gradient(135deg,#E8BE6A,#D4AC5A);font-size:14px;box-shadow:0 3px 14px rgba(0,0,0,0.4);}
+    .pulse-ring{position:absolute;inset:-7px;border-radius:50%;border:3px solid rgba(212,172,90,0.75);animation:pulse 1.6s ease-out infinite;pointer-events:none;}
+    @keyframes pulse{0%{transform:scale(0.7);opacity:0.9;}70%{transform:scale(1.35);opacity:0;}100%{transform:scale(1.35);opacity:0;}}
 
     /* Detail Panel */
     #detail-panel{position:fixed;top:0;left:var(--panel-width);width:320px;height:100%;background:var(--white);box-shadow:var(--shadow-lg);z-index:500;transform:translateX(-110%);opacity:0;transition:transform var(--transition),opacity var(--transition);display:flex;flex-direction:column;overflow:hidden;pointer-events:none;}
@@ -233,15 +252,37 @@ const COUNTRY_NAMES = {
 function countryName(code){ return COUNTRY_NAMES[code] || code || "Unknown"; }
 
 // ── MAP ──
-const map = L.map('map',{center:[20,0],zoom:2,zoomControl:false,worldCopyJump:true});
+const map = L.map('map',{center:[20,0],zoom:2,zoomControl:false,worldCopyJump:true,zoomSnap:0.5,wheelPxPerZoomLevel:90});
 L.control.zoom({position:'bottomright'}).addTo(map);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  maxZoom:19,
-  crossOrigin: true
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains:'abcd',
+  maxZoom:20
 }).addTo(map);
 
-const clusterGroup = L.markerClusterGroup({chunkedLoading:true, maxClusterRadius:60});
+// Custom Starbucks-green cluster bubbles, sized by store count
+function clusterIcon(cluster){
+  const count = cluster.getChildCount();
+  let size, cls;
+  if(count < 10){ size = 34; cls = 'sm'; }
+  else if(count < 100){ size = 42; cls = 'md'; }
+  else if(count < 1000){ size = 50; cls = 'lg'; }
+  else { size = 60; cls = 'xl'; }
+  const label = count >= 1000 ? (count/1000).toFixed(count < 10000 ? 1 : 0) + 'k' : count;
+  return L.divIcon({
+    html:`<div class="cluster-bubble ${cls}"><span>${label}</span></div>`,
+    className:'custom-cluster',
+    iconSize:[size,size], iconAnchor:[size/2,size/2]
+  });
+}
+
+const clusterGroup = L.markerClusterGroup({
+  chunkedLoading:true,
+  maxClusterRadius:60,
+  iconCreateFunction:clusterIcon,
+  spiderfyOnMaxZoom:true,
+  showCoverageOnHover:false
+});
 map.addLayer(clusterGroup);
 
 // ── STATE ──
@@ -254,11 +295,10 @@ const markerById = new Map();
 const LIST_RENDER_LIMIT = 400; // avoid rendering huge DOM lists
 
 function createIcon(selected){
-  const c = selected ? '#D4AC5A' : '#2D8653';
-  const sz = selected ? 30 : 20;
+  const sz = selected ? 32 : 22;
   return L.divIcon({
     className:'',
-    html:`<div style="width:${sz}px;height:${sz}px;background:${c};border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${selected?13:9}px;box-shadow:0 2px ${selected?10:5}px rgba(0,0,0,${selected?0.4:0.22});cursor:pointer;">☕</div>`,
+    html:`<div class="store-marker${selected?' selected':''}">☕${selected?'<span class="pulse-ring"></span>':''}</div>`,
     iconSize:[sz,sz], iconAnchor:[sz/2,sz/2]
   });
 }
@@ -496,8 +536,10 @@ async function init(){
     populateCountrySelect();
     buildMarkers();
     applyFilters();
+    document.getElementById('map').classList.add('ready');
   } catch(err){
     console.error('Failed to load store data', err);
+    document.getElementById('map').classList.add('ready');
     document.getElementById('load-status').textContent = 'Failed to load store data. If you opened this file directly (file://), run a local server instead — e.g. `python3 -m http.server` — since browsers block fetch() on file://.';
   }
 }
