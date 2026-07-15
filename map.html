@@ -7,7 +7,7 @@
   <title>Starbucks Worldwide — Interactive Map</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css"/>
   <style>
     :root{
       --green-deep:#0B3D1F;--green-mid:#1A6335;--green-light:#2D8653;
@@ -204,7 +204,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 <script>
 // ── COUNTRY NAMES ──
 const COUNTRY_NAMES = {
@@ -394,13 +394,17 @@ function setupMapLayers(){
     },
   });
 
-  map.on('click', 'clusters', (e)=>{
+  map.on('click', 'clusters', async (e)=>{
     const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
     const clusterId = features[0].properties.cluster_id;
-    map.getSource('stores').getClusterExpansionZoom(clusterId, (err, zoom)=>{
-      if(err) return;
+    // getClusterExpansionZoom returns a Promise (current MapLibre GL JS API) —
+    // it no longer accepts a Node-style (err, zoom) callback as a second argument.
+    try{
+      const zoom = await map.getSource('stores').getClusterExpansionZoom(clusterId);
       map.easeTo({ center: features[0].geometry.coordinates, zoom, duration: 500 });
-    });
+    } catch(err){
+      console.error('Cluster expansion failed', err);
+    }
   });
 
   map.on('click', 'unclustered-point', (e)=>{
