@@ -7,9 +7,7 @@
   <title>Starbucks Worldwide — Interactive Map</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"/>
   <style>
     :root{
       --green-deep:#0B3D1F;--green-mid:#1A6335;--green-light:#2D8653;
@@ -90,21 +88,9 @@
     #load-status.hidden{display:none;}
     @keyframes spin{to{transform:rotate(360deg);}}
 
-    /* Custom clusters */
-    .custom-cluster{background:transparent;border:none;}
-    .cluster-bubble{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 32% 28%,#2D8653,#0B3D1F 85%);color:#fff;font-family:"DM Sans",sans-serif;font-weight:600;border:2.5px solid rgba(255,255,255,0.92);box-shadow:0 3px 14px rgba(11,61,31,0.45),0 0 0 6px rgba(45,134,83,0.16);transition:transform 0.2s cubic-bezier(0.4,0,0.2,1),box-shadow 0.2s;}
-    .cluster-bubble:hover{transform:scale(1.12);box-shadow:0 5px 20px rgba(11,61,31,0.55),0 0 0 9px rgba(45,134,83,0.24);}
-    .cluster-bubble.sm{font-size:0.72rem;}
-    .cluster-bubble.md{font-size:0.78rem;}
-    .cluster-bubble.lg{font-size:0.84rem;box-shadow:0 4px 16px rgba(11,61,31,0.5),0 0 0 8px rgba(212,172,90,0.22);}
-    .cluster-bubble.xl{font-size:0.9rem;border-color:var(--gold);box-shadow:0 5px 20px rgba(11,61,31,0.55),0 0 0 10px rgba(212,172,90,0.28);}
-
-    /* Store markers */
-    .store-marker{position:relative;width:100%;height:100%;background:linear-gradient(135deg,#2D8653,#1A6335);border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 2px 6px rgba(0,0,0,0.28);cursor:pointer;transition:transform 0.18s cubic-bezier(0.4,0,0.2,1),box-shadow 0.18s;}
-    .store-marker:hover{transform:scale(1.35);box-shadow:0 4px 12px rgba(0,0,0,0.38);}
-    .store-marker.selected{background:linear-gradient(135deg,#E8BE6A,#D4AC5A);font-size:14px;box-shadow:0 3px 14px rgba(0,0,0,0.4);}
-    .pulse-ring{position:absolute;inset:-7px;border-radius:50%;border:3px solid rgba(212,172,90,0.75);animation:pulse 1.6s ease-out infinite;pointer-events:none;}
-    @keyframes pulse{0%{transform:scale(0.7);opacity:0.9;}70%{transform:scale(1.35);opacity:0;}100%{transform:scale(1.35);opacity:0;}}
+    /* MapLibre control tweaks to match the site's rounded, shadowed style */
+    .maplibregl-ctrl-group{border-radius:10px!important;box-shadow:var(--shadow-md)!important;overflow:hidden;}
+    .maplibregl-ctrl-bottom-right{margin-bottom:4px;}
 
     /* Detail Panel */
     #detail-panel{position:fixed;top:0;left:var(--panel-width);width:320px;height:100%;background:var(--white);box-shadow:var(--shadow-lg);z-index:500;transform:translateX(-110%);opacity:0;transition:transform var(--transition),opacity var(--transition);display:flex;flex-direction:column;overflow:hidden;pointer-events:none;}
@@ -134,18 +120,6 @@
     .menu-table td:not(:first-child){text-align:right;color:var(--text-mid);}
     .menu-table td:first-child{color:var(--text-dark);font-weight:500;}
     .menu-note{margin-top:12px;font-size:0.68rem;color:var(--text-light);line-height:1.5;background:var(--cream);padding:8px 10px;border-radius:8px;}
-
-    /* Popup */
-    .custom-popup .leaflet-popup-content-wrapper{background:var(--green-deep);color:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:0;overflow:hidden;}
-    .custom-popup .leaflet-popup-tip-container{display:none;}
-    .custom-popup .leaflet-popup-close-button{display:none;}
-    .custom-popup .leaflet-popup-content{margin:0;width:210px!important;}
-    .popup-inner{padding:13px 15px;}
-    .popup-name{font-family:"Playfair Display",serif;font-size:0.9rem;font-weight:700;color:var(--white);margin-bottom:5px;line-height:1.3;}
-    .popup-addr{font-size:0.72rem;color:rgba(255,255,255,0.65);line-height:1.5;}
-    .popup-hours{font-size:0.68rem;color:var(--gold);margin-top:4px;font-weight:500;}
-    .popup-footer{background:rgba(255,255,255,0.08);padding:7px 15px;font-size:0.65rem;color:rgba(255,255,255,0.5);text-align:center;cursor:pointer;}
-    .popup-footer:hover{background:rgba(255,255,255,0.14);color:var(--white);}
 
     @media(max-width:680px){
       :root{--panel-width:100vw;}
@@ -230,8 +204,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script>
 // ── COUNTRY NAMES ──
 const COUNTRY_NAMES = {
@@ -251,57 +224,27 @@ const COUNTRY_NAMES = {
 };
 function countryName(code){ return COUNTRY_NAMES[code] || code || "Unknown"; }
 
-// ── MAP ──
-const map = L.map('map',{center:[20,0],zoom:2,zoomControl:false,worldCopyJump:true,zoomSnap:0.5,wheelPxPerZoomLevel:90});
-L.control.zoom({position:'bottomright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains:'abcd',
-  maxZoom:20
-}).addTo(map);
-
-// Custom Starbucks-green cluster bubbles, sized by store count
-function clusterIcon(cluster){
-  const count = cluster.getChildCount();
-  let size, cls;
-  if(count < 10){ size = 34; cls = 'sm'; }
-  else if(count < 100){ size = 42; cls = 'md'; }
-  else if(count < 1000){ size = 50; cls = 'lg'; }
-  else { size = 60; cls = 'xl'; }
-  const label = count >= 1000 ? (count/1000).toFixed(count < 10000 ? 1 : 0) + 'k' : count;
-  return L.divIcon({
-    html:`<div class="cluster-bubble ${cls}"><span>${label}</span></div>`,
-    className:'custom-cluster',
-    iconSize:[size,size], iconAnchor:[size/2,size/2]
-  });
-}
-
-const clusterGroup = L.markerClusterGroup({
-  chunkedLoading:true,
-  maxClusterRadius:60,
-  iconCreateFunction:clusterIcon,
-  spiderfyOnMaxZoom:true,
-  showCoverageOnHover:false
+// ── MAP ── (MapLibre GL JS + OpenFreeMap — no API key, no usage limits, no billing)
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://tiles.openfreemap.org/styles/positron',
+  center: [0, 20],   // [lng, lat]
+  zoom: 2,
+  attributionControl: { compact: true }
 });
-map.addLayer(clusterGroup);
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 
 // ── STATE ──
-let ALL_FEATURES = [];   // {id,name,country,street,city,state,postcode,phone,opening_hours,website,driveThru,lat,lng}
+let ALL_FEATURES = [];   // flattened: {id,name,country,street,city,state,postcode,phone,opening_hours,website,driveThru,lat,lng}
+let RAW_FEATURES = [];   // original GeoJSON Feature objects (geometry + properties), for feeding the map source
+const featuresById = new Map();
 let MENU = {};
 let searchQuery = '';
 let activeCountry = '';
 let selectedId = null;
-const markerById = new Map();
+let mapLoaded = false;
+let dataReady = false;
 const LIST_RENDER_LIMIT = 400; // avoid rendering huge DOM lists
-
-function createIcon(selected){
-  const sz = selected ? 32 : 22;
-  return L.divIcon({
-    className:'',
-    html:`<div class="store-marker${selected?' selected':''}">☕${selected?'<span class="pulse-ring"></span>':''}</div>`,
-    iconSize:[sz,sz], iconAnchor:[sz/2,sz/2]
-  });
-}
 
 // ── MENU RENDER ──
 function renderMenu(countryCode){
@@ -328,15 +271,18 @@ function renderMenu(countryCode){
   noteEl.textContent = MENU._note || 'Reference pricing only — not live per-store data. Confirm exact pricing in the official Starbucks app.';
 }
 
+// ── SELECTION HIGHLIGHT (MapLibre feature-state, replaces the old Leaflet icon swap) ──
+function setSelected(id, selected){
+  if(id === null || id === undefined) return;
+  if(!map.getSource('stores')) return;
+  map.setFeatureState({ source: 'stores', id }, { selected });
+}
+
 // ── OPEN DETAIL ──
 function openDetail(feat){
-  if(selectedId !== null && selectedId !== feat.id){
-    const prev = markerById.get(selectedId);
-    if(prev) prev.marker.setIcon(createIcon(false));
-  }
+  if(selectedId !== null && selectedId !== feat.id) setSelected(selectedId, false);
   selectedId = feat.id;
-  const cur = markerById.get(feat.id);
-  if(cur) cur.marker.setIcon(createIcon(true));
+  setSelected(selectedId, true);
 
   document.getElementById('detail-badge').textContent = countryName(feat.country);
   document.getElementById('detail-name').textContent = feat.name;
@@ -371,40 +317,128 @@ function openDetail(feat){
   const li = document.querySelector(`.store-item[data-id="${feat.id}"]`);
   if(li){ li.classList.add('active'); li.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
-  map.flyTo([feat.lat,feat.lng], Math.max(map.getZoom(),15), {duration:0.8});
+  // clusterMaxZoom is 14, so flying to 15+ guarantees this store renders as an
+  // individual (unclustered) point, which is what the "selected" paint case targets.
+  map.flyTo({ center: [feat.lng, feat.lat], zoom: Math.max(map.getZoom(), 15), duration: 800 });
 }
 
 function closeDetail(){
   document.getElementById('detail-panel').classList.remove('open');
-  if(selectedId!==null){
-    const e = markerById.get(selectedId);
-    if(e) e.marker.setIcon(createIcon(false));
+  if(selectedId !== null){
+    setSelected(selectedId, false);
     selectedId = null;
   }
   document.querySelectorAll('.store-item').forEach(el=>el.classList.remove('active'));
 }
 document.getElementById('detail-close').addEventListener('click', closeDetail);
 
-// ── BUILD MARKERS (once, from fetched data) ──
-function buildMarkers(){
-  clusterGroup.clearLayers();
-  markerById.clear();
+// ── MAP LAYERS (clustered GeoJSON source, added once the style + data are both ready) ──
+function setupMapLayers(){
+  const visibleIds = new Set(ALL_FEATURES.filter(isVisible).map(f=>f.id));
 
-  ALL_FEATURES.forEach(feat=>{
-    const marker = L.marker([feat.lat, feat.lng], {icon:createIcon(false)});
-    const addrShort = [feat.street, feat.city].filter(Boolean).join(', ');
-    marker.bindPopup(L.popup({className:'custom-popup',offset:[0,0],closeButton:false}).setContent(`
-      <div class="popup-inner">
-        <div class="popup-name">${feat.name}</div>
-        ${addrShort ? `<div class="popup-addr">${addrShort}</div>` : ''}
-        ${feat.opening_hours ? `<div class="popup-hours">⏰ ${feat.opening_hours}</div>` : ''}
-      </div>
-      <div class="popup-footer" onclick="openDetail(ALL_FEATURES.find(f=>f.id===${JSON.stringify(feat.id)}));this.closest('.leaflet-popup').style.display='none'">View store details →</div>
-    `));
-    marker.on('click', L.DomEvent.stopPropagation);
-    markerById.set(feat.id, {marker, feat});
-    clusterGroup.addLayer(marker);
+  map.addSource('stores', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: RAW_FEATURES.filter(f => visibleIds.has(f.properties.id)),
+    },
+    cluster: true,
+    clusterMaxZoom: 14,
+    clusterRadius: 50,
+    promoteId: 'id', // lets setFeatureState key on our own properties.id
   });
+
+  // Reuse whatever bold font the style itself ships (OpenFreeMap: "Noto Sans Bold"),
+  // rather than guessing a font name the glyph server might not have.
+  const boldFont = map.getStyle().layers.find(
+    l => l.type === 'symbol' && (l.layout || {})['text-font']
+  )?.layout['text-font'] || ['Noto Sans Bold'];
+
+  map.addLayer({
+    id: 'clusters',
+    type: 'circle',
+    source: 'stores',
+    filter: ['has', 'point_count'],
+    paint: {
+      'circle-color': ['step', ['get', 'point_count'], '#00704A', 10, '#1E3932', 100, '#0B3D1F'],
+      'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 100, 28],
+      'circle-stroke-width': 2,
+      'circle-stroke-color': '#ffffff',
+      'circle-opacity': 0.92,
+    },
+  });
+
+  map.addLayer({
+    id: 'cluster-count',
+    type: 'symbol',
+    source: 'stores',
+    filter: ['has', 'point_count'],
+    layout: {
+      'text-field': ['get', 'point_count_abbreviated'],
+      'text-font': boldFont,
+      'text-size': 12,
+    },
+    paint: { 'text-color': '#ffffff' },
+  });
+
+  map.addLayer({
+    id: 'unclustered-point',
+    type: 'circle',
+    source: 'stores',
+    filter: ['!', ['has', 'point_count']],
+    paint: {
+      'circle-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#D4AC5A', '#00704A'],
+      'circle-radius': ['case', ['boolean', ['feature-state', 'selected'], false], 9, 6],
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 2.5, 1.5],
+      'circle-stroke-color': '#ffffff',
+    },
+  });
+
+  map.on('click', 'clusters', (e)=>{
+    const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+    const clusterId = features[0].properties.cluster_id;
+    map.getSource('stores').getClusterExpansionZoom(clusterId, (err, zoom)=>{
+      if(err) return;
+      map.easeTo({ center: features[0].geometry.coordinates, zoom, duration: 500 });
+    });
+  });
+
+  map.on('click', 'unclustered-point', (e)=>{
+    const props = e.features[0].properties;
+    const feat = featuresById.get(props.id);
+    if(feat) openDetail(feat);
+  });
+
+  ['clusters', 'unclustered-point'].forEach(layerId=>{
+    map.on('mouseenter', layerId, ()=>{ map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', layerId, ()=>{ map.getCanvas().style.cursor = ''; });
+  });
+}
+
+// ── 3D BUILDINGS (only kick in once zoomed into street level; never at the
+// world/country zoom where all stores are clustered) ──
+function add3DBuildings(){
+  const style = map.getStyle();
+  const labelLayerId = style.layers.find(
+    l => l.type === 'symbol' && (l.layout || {})['text-field']
+  )?.id;
+  const vectorSourceId = Object.keys(style.sources).find(id => style.sources[id].type === 'vector');
+  if(!vectorSourceId) return; // defensive: skip if the style ever drops its vector source
+
+  map.addLayer({
+    id: '3d-buildings',
+    source: vectorSourceId,
+    'source-layer': 'building',
+    type: 'fill-extrusion',
+    minzoom: 15,
+    filter: ['!=', ['get', 'hide_3d'], true],
+    paint: {
+      'fill-extrusion-color': '#00704A',
+      'fill-extrusion-opacity': 0.75,
+      'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, ['coalesce', ['get', 'render_height'], 5]],
+      'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, ['coalesce', ['get', 'render_min_height'], 0]],
+    },
+  }, labelLayerId);
 }
 
 // ── FILTER ──
@@ -423,12 +457,13 @@ function applyFilters(){
   const visibleFeats = ALL_FEATURES.filter(isVisible);
   const visibleIds = new Set(visibleFeats.map(f=>f.id));
 
-  markerById.forEach(({marker, feat})=>{
-    const shouldShow = visibleIds.has(feat.id);
-    const has = clusterGroup.hasLayer(marker);
-    if(shouldShow && !has) clusterGroup.addLayer(marker);
-    if(!shouldShow && has) clusterGroup.removeLayer(marker);
-  });
+  const source = map.getSource('stores');
+  if(source){
+    source.setData({
+      type: 'FeatureCollection',
+      features: RAW_FEATURES.filter(f => visibleIds.has(f.properties.id)),
+    });
+  }
 
   buildList(visibleFeats);
   updateBadge(visibleFeats.length);
@@ -506,6 +541,22 @@ function populateCountrySelect(){
   });
 }
 
+// ── STARTUP COORDINATION (map style load and data fetch race each other) ──
+function tryInit(){
+  if(!mapLoaded || !dataReady) return;
+  setupMapLayers();
+  populateCountrySelect();
+  applyFilters();
+  document.getElementById('load-status').classList.add('hidden');
+  document.getElementById('map').classList.add('ready');
+}
+
+map.on('load', ()=>{
+  mapLoaded = true;
+  add3DBuildings();
+  tryInit();
+});
+
 // ── LOAD DATA ──
 async function init(){
   try{
@@ -516,6 +567,7 @@ async function init(){
     const geo = await geoRes.json();
     MENU = await menuRes.json();
 
+    RAW_FEATURES = geo.features;
     ALL_FEATURES = geo.features.map(f=>({
       id: f.properties.id,
       name: f.properties.name,
@@ -531,12 +583,10 @@ async function init(){
       lng: f.geometry.coordinates[0],
       lat: f.geometry.coordinates[1],
     }));
+    ALL_FEATURES.forEach(f => featuresById.set(f.id, f));
 
-    document.getElementById('load-status').classList.add('hidden');
-    populateCountrySelect();
-    buildMarkers();
-    applyFilters();
-    document.getElementById('map').classList.add('ready');
+    dataReady = true;
+    tryInit();
   } catch(err){
     console.error('Failed to load store data', err);
     document.getElementById('map').classList.add('ready');

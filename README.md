@@ -32,7 +32,8 @@ This project started as a map of the ~100 Starbucks locations in Seattle, WA. It
 | Feature | Description |
 |---|---|
 | **Worldwide Coverage** | Every Starbucks location tagged in OpenStreetMap, across ~80 countries |
-| **Marker Clustering** | Tens of thousands of markers stay smooth and readable at any zoom level |
+| **Marker Clustering** | Tens of thousands of markers stay smooth and readable at any zoom level (WebGL-rendered) |
+| **3D Buildings** | Zoom into any city block to see extruded building footprints in Starbucks green |
 | **Country Filter** | Narrow the map and list down to a single country |
 | **Real-Time Search** | Filter by store name, city, or address as you type |
 | **Store Detail Panel** | Address, phone, hours, and store webpage link, where available |
@@ -72,9 +73,9 @@ The project originally used a static 2021 Kaggle CSV (*Starbucks Locations World
 
 | Technology | Role |
 |---|---|
-| [Leaflet.js v1.9.4](https://leafletjs.com/) | Interactive map rendering |
-| [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster) | Clusters tens of thousands of markers for performance |
-| [OpenStreetMap](https://www.openstreetmap.org/) | Base map tile layer + store location data (no API key) |
+| [MapLibre GL JS](https://maplibre.org/) | WebGL vector map rendering, native GeoJSON clustering, 3D building extrusion |
+| [OpenFreeMap](https://openfreemap.org/) | Free, unlimited vector basemap tiles (Positron style) — no API key |
+| [OpenStreetMap](https://www.openstreetmap.org/) | Store location data via Overpass (no API key) |
 | GeoJSON | Store location data, fetched by the map at runtime |
 | Vanilla JavaScript (ES6+) | Filtering, search, and all interactivity |
 | CSS3 | Layout, animations, and Starbucks-themed design |
@@ -136,8 +137,8 @@ This takes roughly 20–40 minutes since it queries ~80 countries sequentially a
 - Kukuroo3. (2021). *Starbucks Locations Worldwide 2021 Version*. Kaggle. https://www.kaggle.com/datasets/kukuroo3/starbucks-locations-worldwide-2021-version — original data source for the Seattle-only version of this project.
 
 **Libraries**
-- Agafonkin, V. (2010). *Leaflet.js* (v1.9.4). https://leafletjs.com/
-- Danzel. (2012). *Leaflet.markercluster*. https://github.com/Leaflet/Leaflet.markercluster
+- MapLibre contributors. (n.d.). *MapLibre GL JS*. https://maplibre.org/
+- OpenFreeMap. (n.d.). *Free vector map tiles*. https://openfreemap.org/
 - OpenStreetMap contributors. (n.d.). *OpenStreetMap*. https://www.openstreetmap.org/copyright
 
 **Context & Background**
