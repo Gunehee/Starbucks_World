@@ -204,8 +204,16 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
-<script>
+<script type="module">
+// MapLibre GL JS v6+ dropped the classic UMD <script src> bundle (dist/maplibre-gl.js
+// no longer exists in the package) in favor of shipping ES modules only. Importing the
+// .mjs build directly is the CDN, no-bundler-required replacement — still works from a
+// plain static file, just via `import` instead of a global `maplibregl` variable.
+// Namespace import (not default) — the .mjs build only has named exports (Map,
+// NavigationControl, ...), so this recreates the old global `maplibregl` object
+// without having to rewrite every `maplibregl.X` call site below.
+import * as maplibregl from 'https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.mjs';
+
 // ── COUNTRY NAMES ──
 const COUNTRY_NAMES = {
   US:"United States",CA:"Canada",MX:"Mexico",GT:"Guatemala",CR:"Costa Rica",PA:"Panama",
